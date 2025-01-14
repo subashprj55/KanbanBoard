@@ -60,35 +60,6 @@ This project is hosted on Vercel and can be accessed at:
 - **`npm run start`**: Start the production server.
 - **`npm run lint`**: Run the linter to check for code issues.
 
-## File Structure
-
-```plaintext
-├── app
-│   ├── kanban
-│   │   ├── page.tsx       # Main Kanban page
-│   │   ├── types.ts       # Type definitions for Kanban page
-│   │   ├── globals.css    # Global CSS file
-│   │   └── layout.tsx     # Layout wrapper for Kanban page
-├── components
-│   ├── TaskContainer
-│   │   ├── index.tsx      # TaskContainer component
-│   │   └── types.ts       # Type definitions for TaskContainer
-│   ├── Tasks
-│   │   ├── index.tsx      # Tasks component
-│   │   └── types.ts       # Type definitions for Tasks
-├── hooks
-│   └── useKanbanBoard.ts  # Custom hook for Kanban logic
-├── icons                  # Icons folder
-├── public
-│   └── Kanban-Zone-Board.webp # Image assets
-├── types
-│   └── kanban.ts          # Global type definitions
-├── .gitignore             # Files to ignore in Git
-├── next.config.ts         # Next.js configuration
-├── tailwind.config.ts     # Tailwind CSS configuration
-├── tsconfig.json          # TypeScript configuration
-└── package.json           # Dependency management
-```
 
 ## Dependencies
 
