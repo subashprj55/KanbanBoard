@@ -1,7 +1,18 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
+import "aos/dist/aos.css";
+import AOS from "aos";
+import { useEffect } from "react";
 
 export default function Home() {
+  useEffect(() => {
+    AOS.init({
+      duration: 1000,
+      offset: 120,
+      once: true,
+    });
+  }, []);
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8 md:p-24 bg-gradient-to-b from-blue-50 to-white">
       <div className="flex flex-col-reverse items-center w-full justify-between gap-10 lg:flex-row">
@@ -29,7 +40,10 @@ export default function Home() {
         </div>
 
         {/* Image Section */}
-        <div className="w-full lg:w-1/2 mt-10 lg:mt-0 flex justify-center">
+        <div
+          data-aos="fade-left"
+          className="w-full lg:w-1/2 mt-10 lg:mt-0 flex justify-center"
+        >
           <Image
             src="/Kanban-Zone-Board.webp"
             alt="Kanban Board"
