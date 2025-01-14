@@ -1,13 +1,37 @@
 "use client";
 import React from "react";
 import TaskContainer from "@/components/TaskContainer";
-import { useKanbanBoard } from "@/hooks/useKanbanBoard";
 import { KanbanColumn } from "@/types/kanban";
 import { DragDropContext } from "react-beautiful-dnd";
+import { useKanbanStore } from "@/hooks/useKanbanBoard";
 
 const kanban = () => {
-  const { kanbanData } = useKanbanBoard();
-  const onDragEnd = (result: any) => {};
+  const { kanbanData } = useKanbanStore();
+
+  const onDragEnd = (result: any) => {
+    console.log(result);
+    const { destination, source } = result;
+    if (!destination) {
+      return;
+    }
+
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
+
+    const sourceId = parseInt(source.droppableId, 10);
+    const destinationId = parseInt(destination.droppableId, 10);
+    const taskIndex = source.index;
+    const destinationIndex = destination.index;
+
+    useKanbanStore
+      .getState()
+      .moveTask(sourceId, destinationId, taskIndex, destinationIndex);
+  };
+
   return (
     <div className="mx-[5%] mt-14">
       <HeaderSection />
@@ -30,7 +54,7 @@ const kanban = () => {
 };
 
 const HeaderSection = () => {
-  const { addColumn } = useKanbanBoard();
+  const { addColumn } = useKanbanStore();
   return (
     <div className="flex justify-between items-center">
       {/* <input
