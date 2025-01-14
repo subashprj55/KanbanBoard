@@ -1,76 +1,96 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import TaskContainer from "@/components/TaskContainer";
-import { KanbanColumn } from "@/types/kanban";
-import { DragDropContext } from "react-beautiful-dnd";
+import { KanbanColumn } from "./types";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { useKanbanStore } from "@/hooks/useKanbanBoard";
 
-const kanban = () => {
-  const { kanbanData } = useKanbanStore();
+const Kanban: React.FC = () => {
+  const { kanbanData, moveTask: stateMoveTask } = useKanbanStore();
 
-  const onDragEnd = (result: any) => {
-    console.log(result);
-    const { destination, source } = result;
-    if (!destination) {
-      return;
-    }
-
-    if (
-      destination.droppableId === source.droppableId &&
-      destination.index === source.index
-    ) {
-      return;
-    }
-
-    const sourceId = parseInt(source.droppableId, 10);
-    const destinationId = parseInt(destination.droppableId, 10);
-    const taskIndex = source.index;
-    const destinationIndex = destination.index;
-
-    useKanbanStore
-      .getState()
-      .moveTask(sourceId, destinationId, taskIndex, destinationIndex);
+  const moveTask = (
+    sourceId: number,
+    destinationId: number,
+    taskIndex: number,
+    destinationIndex: number
+  ) => {
+    stateMoveTask(sourceId, destinationId, taskIndex, destinationIndex);
   };
 
   return (
     <div className="mx-[5%] mt-14">
       <HeaderSection />
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-5 mt-9 overflow-x-scroll">
-          {kanbanData.map(({ id, titleName, tasks }: KanbanColumn) => {
-            return (
-              <TaskContainer
-                key={id}
-                id={id}
-                titleName={titleName}
-                tasks={tasks}
-              />
-            );
-          })}
+      <DndProvider backend={HTML5Backend}>
+        <div className="flex gap-5 mt-9 overflow-x-auto">
+          {kanbanData.map(({ id, titleName, tasks }: KanbanColumn) => (
+            <TaskContainer
+              key={id}
+              id={id}
+              titleName={titleName}
+              tasks={tasks}
+              moveTask={moveTask}
+            />
+          ))}
         </div>
-      </DragDropContext>
+      </DndProvider>
     </div>
   );
 };
 
-const HeaderSection = () => {
+const HeaderSection: React.FC = () => {
   const { addColumn } = useKanbanStore();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [columnName, setColumnName] = useState("");
+
+  const handleCreate = () => {
+    if (columnName.trim() === "") return;
+    addColumn(columnName.trim());
+    setColumnName("");
+    setIsModalOpen(false);
+  };
+
   return (
-    <div className="flex justify-between items-center">
-      {/* <input
-        type="text"
-        placeholder="search tasks..."
-        className="border-2 border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:border-gray-300 w-1/3"
-      /> */}
-      <h1 className="text-3xl font-semibold">KANBAN-BOARD</h1>
+    <div className="flex flex-wrap justify-between items-center gap-4">
+      <h1 className="text-2xl sm:text-3xl font-semibold">KANBAN-BOARD</h1>
       <button
-        onClick={() => addColumn("de")}
+        onClick={() => setIsModalOpen(true)}
         className="px-5 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
       >
         Add Column
       </button>
+
+      {/* Popup Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-md shadow-md w-[90%] max-w-md">
+            <h2 className="text-xl font-semibold mb-4">Create New Column</h2>
+            <input
+              type="text"
+              value={columnName}
+              onChange={(e) => setColumnName(e.target.value)}
+              placeholder="Enter column name"
+              className="border-2 border-gray-500 mb-4 rounded-md px-3 py-2 w-full focus:outline-none focus:border-gray-800"
+            />
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-5 py-2 bg-gray-300 text-gray-900 rounded-md hover:bg-gray-400 hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreate}
+                className="px-5 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default kanban;
+export default Kanban;

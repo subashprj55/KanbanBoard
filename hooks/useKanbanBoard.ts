@@ -31,6 +31,7 @@ interface KanbanState {
     taskIndex: number,
     destinationIndex: number
   ) => void;
+  deleteTask: (columnId: number, taskIndex: number) => void;
 }
 
 export const useKanbanStore = create<KanbanState>()(
@@ -72,10 +73,13 @@ export const useKanbanStore = create<KanbanState>()(
             (column) => column.id === destinationId
           );
 
-          if (sourceId === destinationId && sourceColumn) {
-            const updatedTasks = Array.from(sourceColumn?.tasks);
-            const [removedTask] = updatedTasks.splice(taskIndex, 1);
-            updatedTasks.splice(destinationIndex, 0, removedTask);
+          if (!sourceColumn || !destinationColumn) return state;
+
+          // Same column reordering
+          if (sourceId === destinationId) {
+            const updatedTasks = Array.from(sourceColumn.tasks);
+            const [movedTask] = updatedTasks.splice(taskIndex, 1);
+            updatedTasks.splice(destinationIndex, 0, movedTask);
 
             return {
               kanbanData: state.kanbanData.map((column) =>
@@ -86,33 +90,38 @@ export const useKanbanStore = create<KanbanState>()(
             };
           }
 
-          if (sourceColumn && destinationColumn) {
-            const taskToMove = sourceColumn.tasks[taskIndex];
+          // Moving between different columns
+          const sourceTasks = Array.from(sourceColumn.tasks);
+          const destinationTasks = Array.from(destinationColumn.tasks);
 
-            // Remove the task from the source column
-            const updatedSourceTasks = sourceColumn.tasks.filter(
-              (_, index) => index !== taskIndex
-            );
+          // Remove task from the source column
+          const [movedTask] = sourceTasks.splice(taskIndex, 1);
 
-            // Add the task to the destination column
-            const updatedDestinationTasks = [
-              ...destinationColumn.tasks,
-              taskToMove,
-            ];
+          // Insert task into the destination column at the specified index
+          destinationTasks.splice(destinationIndex, 0, movedTask);
 
-            return {
-              kanbanData: state.kanbanData.map((column) =>
-                column.id === sourceId
-                  ? { ...column, tasks: updatedSourceTasks }
-                  : column.id === destinationId
-                  ? { ...column, tasks: updatedDestinationTasks }
-                  : column
-              ),
-            };
-          }
-          return state;
+          return {
+            kanbanData: state.kanbanData.map((column) =>
+              column.id === sourceId
+                ? { ...column, tasks: sourceTasks }
+                : column.id === destinationId
+                ? { ...column, tasks: destinationTasks }
+                : column
+            ),
+          };
         });
       },
+      deleteTask: (columnId, taskIndex) =>
+        set((state) => ({
+          kanbanData: state.kanbanData.map((column) =>
+            column.id === columnId
+              ? {
+                  ...column,
+                  tasks: column.tasks.filter((_, index) => index !== taskIndex),
+                }
+              : column
+          ),
+        })),
     }),
     {
       name: "kanbanState", // Key for localStorage

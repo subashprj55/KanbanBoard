@@ -3,5 +3,3 @@ export interface KanbanColumn {
   titleName: string;
   tasks: string[];
 }
-
-export type KanbanData = KanbanColumn[];
